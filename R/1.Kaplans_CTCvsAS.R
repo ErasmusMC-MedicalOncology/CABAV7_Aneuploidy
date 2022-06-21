@@ -91,8 +91,8 @@ plotFits$fit.mFASTSeqs$plot +
 
 ## Compare models. ----
 
-fit.mFASTSeqS <- survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Genome.wide.status..Baseline., data = survData)
-fit.CTC <- survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Dichotomized.CTC.count..Baseline., data = survData)
+fit.mFASTSeqS <- survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Genome.wide.status, data = survData2)
+fit.CTC <- survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Dichotomized.CTC.count, data = survData2)
 
 AIC(fit.mFASTSeqS, fit.CTC)
 

@@ -68,10 +68,3 @@ plotFits$fit.mFASTSeqs$plot +
   plotFits$fit.WHO$table +
   patchwork::plot_layout(design = layout, heights = c(1, .2), guides = 'auto') +
   patchwork::plot_annotation(tag_levels = 'a') & ggplot2::theme(plot.tag = element_text(size = 11, family = 'Arial'))
-
-
-## Compare models. ----
-
-fit.mFASTSeqS <- survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Genome.wide.status, data = survData)
-fit.CTC <- survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Dichotomized.CTC.count, data = survData)
-AIC(fit.mFASTSeqS, fit.CTC)
