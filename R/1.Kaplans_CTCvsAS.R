@@ -1,5 +1,5 @@
 # Author:                      Job van Riet
-# Date:                        09-05-2022
+# Date:                        21-06-2022
 # Function:                    Compare performance of dichotomized CTC vs. mFAST-SeqS aneuploidy scores.
 
 # Import libraries ----
@@ -42,7 +42,7 @@ data.Patient$survival <- data.Patient$clinicalData %>%
     `WHO status (Pooled)` = ifelse(`WHO/ECOG PS at registration` %in% c(1,2), '1-2', `WHO/ECOG PS at registration`)
   ) %>% 
   dplyr::select(`Genome-wide status (Baseline)`, `Dichotomized CTC count (Baseline)`, `WHO status (Pooled)`, monthsFromPreScreeningToEnd, Survival) %>% 
-  dplyr::filter(`Genome-wide status (Baseline)` != '.') |> 
+  dplyr::filter(`Genome-wide status (Baseline)` != '.') %>% 
   dplyr::mutate(combinedScores = paste(`Genome-wide status (Baseline)`, `Dichotomized CTC count (Baseline)`, sep = ' & '))
 
 
@@ -54,7 +54,7 @@ data.Patient$survival %>%
   plotHR(., withQ = T)
 
 
-# Survival Analysis (Cox regression ----
+# Survival Analysis (Cox regression) ----
 
 survData <- data.frame(data.Patient$survival)
 plotFits <- list()
