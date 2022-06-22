@@ -62,17 +62,18 @@ plotFits <- list()
 ## Dichotomized mFAST-SeqS. ----
 fit.mFASTSeqs <- survminer::surv_fit(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Genome.wide.status..Baseline., data = survData)
 names(fit.mFASTSeqs$strata) <-  base::gsub('.*=', '', names(fit.mFASTSeqs$strata))
-plotFits$fit.mFASTSeqs <- plotSurvival(fit.mFASTSeqs, data = survData, ylim = 45, palette = c('#648FFF', '#FE6100'))
+plotFits$fit.mFASTSeqs <- plotSurvival(fit.mFASTSeqs, hr = survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Genome.wide.status..Baseline., data = survData), data = survData, ylim = 45, palette = c('#648FFF', '#FE6100'))
+
 
 ## Dichotomized CTC Counts. ----
 fit.CTC <- survminer::surv_fit(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Dichotomized.CTC.count..Baseline., data = survData)
 names(fit.CTC$strata) <-  base::gsub('.*=', '', names(fit.CTC$strata))
-plotFits$fit.CTC <- plotSurvival(fit.CTC, data = survData, ylim = 45, palette = c('#f23005', '#ffbe73'))
+plotFits$fit.CTC <- plotSurvival(fit.CTC, hr = survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Dichotomized.CTC.count..Baseline., data = survData), data = survData, ylim = 45, palette = c('#f23005', '#ffbe73'))
 
 ## Dichotomized WHO. ----
 fit.WHO <- survminer::surv_fit(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ WHO.status..Pooled., data = survData)
 names(fit.WHO$strata) <-  base::gsub('.*=', 'WHO: ', names(fit.WHO$strata))
-plotFits$fit.WHO <- plotSurvival(fit.WHO, data = survData, ylim = 45, palette = c('#2C3D4F', '#1ABB9A'))
+plotFits$fit.WHO <- plotSurvival(fit.WHO, hr = survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ WHO.status..Pooled., data = survData), data = survData, ylim = 45, palette = c('#2C3D4F', '#1ABB9A'))
 
 
 ## Combine plots. ----
