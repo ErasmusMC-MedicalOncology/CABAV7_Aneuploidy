@@ -90,16 +90,8 @@ plotFits$fit.mFASTSeqs$plot +
   patchwork::plot_annotation(tag_levels = 'a') & ggplot2::theme(plot.tag = element_text(size = 11, family = 'Arial'))
 
 
-## Compare models. ----
-
-fit.mFASTSeqS <- survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Genome.wide.status, data = survData2)
-fit.CTC <- survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Dichotomized.CTC.count, data = survData2)
-
-AIC(fit.mFASTSeqS, fit.CTC)
-
-
 # Combine CTC and mFAST-SeqS ----
 
 fit.Combined <- survminer::surv_fit(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ combinedScores, data = survData)
 names(fit.Combined$strata) <-  base::gsub('.*=', '', names(fit.Combined$strata))
-plotFits$fit.Combined <- plotSurvival(fit.Combined, data = survData, ylim = 45, palette = c('#E64B35FF', '#4DBBD5FF', '#00A087FF', '#3C5488FF'))
+plotFits$fit.Combined <- plotSurvival(fit.Combined, hr = survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ combinedScores, data = survData), data = survData, ylim = 45, palette = c('#E64B35FF', '#4DBBD5FF', '#00A087FF', '#3C5488FF'))
