@@ -31,6 +31,7 @@ data.CABARESC <- readxl::read_excel('Misc./Suppl. Table 1 - Overview of Data.xls
   dplyr::mutate(combinedScores = paste(`Genome-wide status`, `Dichotomized CTC count`, sep = ' & '))
 
 
+
 # Survival Analysis (Cox regression) ----
 
 survData <- data.frame(data.CABARESC)
