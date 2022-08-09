@@ -25,6 +25,20 @@ data.Table1_CABARESC <- dplyr::bind_rows(
     data.CABARESC %>% dplyr::select(`Age at registration`, `WHO/ECOG PS at registration`, PSA = `PSA at baseline`, ANC = `ANC at baseline`, HBG = `hbm at baseline`, ALP = `alkphos at baseline`, LDH = `ldh at baseline`) %>% dplyr::mutate(cohort = 'CABARESC', `WHO/ECOG PS at registration` = as.character(`WHO/ECOG PS at registration`)),
 )
 
+
+# Age
+# Dichotomized WHO
+# PSA at primary
+# Total Gleason
+# HBG
+# ALB
+# LDH
+# ALP
+# ANC
+# Z-scores
+# CTCs
+
+
 # Perform statistics. ----
 
 test.Table1 <- data.Table1 %>% 
