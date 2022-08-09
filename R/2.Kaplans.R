@@ -148,7 +148,7 @@ survData <- data.frame(
     dplyr::bind_rows(
         data.Patient$CABAV7.OS %>% dplyr::mutate(strata = 'CABA-V7<br><i>n</i>=131'),
         data.Patient$CABARESC.OS %>% dplyr::mutate(strata = 'CABARESC<br><i>n</i>=224'),
-        data.Patient$CABARESC.OS %>% dplyr::filter(subset) %>% dplyr::mutate(strata = 'CABARESC (Verification)<br><i>n</i>=50')
+        data.Patient$CABARESC.OS %>% dplyr::filter(subset) %>% dplyr::mutate(strata = 'CABARESC (Validation)<br><i>n</i>=50')
     )
 )
 
