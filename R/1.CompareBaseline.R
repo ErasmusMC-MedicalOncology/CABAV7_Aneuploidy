@@ -106,6 +106,7 @@ data.AIC <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx', sh
 MASS::stepAIC(survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ `Age at registration` + `WHO status (Pooled)` + `PSA at primary diagnosis [ug/L]` + HBG + ALB + 
                                   LDH + ALP + ANC + `Genome-Wide Z Score (Baseline)` + `Dichotomized CTC count (Baseline)`, data = data.AIC, ties = 'breslow') , direction = 'backward')
 
+
 # Outcomes:
 #                                                   coef exp(coef)  se(coef)      z       p
 # `WHO status (Pooled)`1 - 2                       0.729202  2.073426  0.294403  2.477 0.01325

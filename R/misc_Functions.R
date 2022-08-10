@@ -61,7 +61,7 @@ plotSurvival <- function(fit, ylim, data, palette = 'jco', hr = NULL){
     return(x)
 }
 
-plotHR <- function(data, withQ = F){
+plotHR <- function(data){
     x <- data %>% 
         gtsummary::tbl_regression(
             exponentiate = T, 
@@ -75,10 +75,6 @@ plotHR <- function(data, withQ = F){
         gtsummary::italicize_levels() %>% 
         gtsummary::sort_p() %>% 
         bstfun::add_inline_forest_plot(header = '', spec_pointrange.args = list(lim = c(-3, 3), width = 550, cex = 1, col = 'black', pch = 1))
-    
-    if(withQ){
-        x <- x %>% gtsummary::add_q()
-    }
     
     #x <- x %>% bstfun::as_ggplot()
     

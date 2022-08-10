@@ -47,7 +47,10 @@ data.Patient$CABAV7.OS <- data.Patient$CABAV7.clinical %>%
     ) %>% 
     dplyr::select(`Genome-wide status (Baseline)`, `Dichotomized CTC count (Baseline)`, `WHO status (Pooled)`, monthsFromPreScreeningToEnd, Survival) %>% 
     dplyr::filter(`Genome-wide status (Baseline)` != '.') %>% 
-    dplyr::mutate(combinedScores = paste(`Genome-wide status (Baseline)`, `Dichotomized CTC count (Baseline)`, sep = ' & '))
+    dplyr::mutate(
+        `Genome-wide status (Baseline)` = gsub('Genome-wide Z-', 'Aneuploidy ', `Genome-wide status (Baseline)`),
+        `Combined Scores` = paste(`Genome-wide status (Baseline)`, `Dichotomized CTC count (Baseline)`, sep = ' & ')
+    )
 
 
 ## CABARESC ----
@@ -63,7 +66,10 @@ data.Patient$CABARESC.OS <- data.Patient$CABARESC.clinical %>%
         `WHO status (Pooled)` = ifelse(`WHO/ECOG PS at registration` %in% c('1', '2'), '1-2', '0')
     ) %>% 
     dplyr::select(`Genome-wide status`, `Dichotomized CTC count`, `WHO status (Pooled)`, monthsFromPreScreeningToEnd, Survival) %>% 
-    dplyr::mutate(combinedScores = paste(`Genome-wide status`, `Dichotomized CTC count`, sep = ' & ')) %>% 
+    dplyr::mutate(
+        `Genome-wide status` = gsub('Genome-wide Z-', 'Aneuploidy ', `Genome-wide status`),
+        `Combined Scores` = paste(`Genome-wide status`, `Dichotomized CTC count`, sep = ' & ')
+    ) %>% 
     dplyr::mutate(subset = ifelse(!is.na(`Genome-wide status`), T, F))
 
 
@@ -71,11 +77,8 @@ data.Patient$CABARESC.OS <- data.Patient$CABARESC.clinical %>%
 
 data.Patient$CABAV7.OS %>% 
     dplyr::filter(!is.na(Survival)) %>% 
-    dplyr::mutate(
-        `Genome-wide status (Baseline)` = gsub('Genome-wide Z-', 'Aneuploidy ', `Genome-wide status (Baseline)`)
-    ) %>% 
     survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ `Genome-wide status (Baseline)` + `Dichotomized CTC count (Baseline)` + `WHO status (Pooled)`, data = ., ties = 'breslow') %>% 
-    plotHR(., withQ = T)
+    plotHR(.)
 
 
 # Survival Analysis (Cox regression) ----
@@ -142,7 +145,7 @@ plotFits$fit.CABAV7.mFASTSeqs$plot +
     plotFits$fit.CABARESC.CTC$table +
     plotFits$fit.CABARESC.WHO$table +
     patchwork::plot_layout(design = layout, heights = c(1, .2, 1, .2), guides = 'auto') +
-    patchwork::plot_annotation(tag_levels = 'a') & ggplot2::theme(plot.tag = element_text(size = 11, family = 'Arial'))
+    patchwork::plot_annotation(tag_levels = 'a') & ggplot2::theme(plot.tag = element_text(size = 11, family = 'Roboto'))
 
 
 ## Compare OS: CABAV7 vs. CABARESC. ----
@@ -165,9 +168,9 @@ plotSurvival(fit.between, hr = survival::coxph(formula = survival::Surv(monthsFr
 
 
 plotCombined <- function(data){
-    fit.Combined <- survminer::surv_fit(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ combinedScores, data = data)
+    fit.Combined <- survminer::surv_fit(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ `Combined Scores`, data = data)
     names(fit.Combined$strata) <-  base::gsub('.*=', '', names(fit.Combined$strata))
-    return(plotSurvival(fit.Combined, hr = survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ combinedScores, data = data), data = data, ylim = 45, palette = c('#0073C2', '#EFC000', '#CD534C', '#00A100')))
+    return(plotSurvival(fit.Combined, hr = survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ `Combined Scores`, data = data), data = data, ylim = 45, palette = c('#0073C2', '#EFC000', '#CD534C', '#00A100')))
     
 }
 
@@ -183,4 +186,24 @@ plotFits$fitCombined.CABAV7$plot +
     plotFits$fitCombined.CABAV7$table +
     plotFits$fitCombined.CABARESC$table +
     patchwork::plot_layout(design = layout, heights = c(1, .2), guides = 'auto') +
-    patchwork::plot_annotation(tag_levels = 'a') & ggplot2::theme(plot.tag = element_text(size = 11, family = 'Arial'))
+    patchwork::plot_annotation(tag_levels = 'a') & ggplot2::theme(plot.tag = element_text(size = 11, family = 'Roboto'))
+
+
+# Add HR. ----
+
+data.Patient$CABARESC.OS %>% 
+    dplyr::filter(subset) %>% 
+    dplyr::filter(!is.na(Survival)) %>% 
+    survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ `Combined Scores`, data = ., ties = 'breslow') %>% 
+    gtsummary::tbl_regression(
+        exponentiate = T, 
+        add_estimate_to_reference_rows = T,
+    ) %>%
+    gtsummary::add_n() %>% 
+    gtsummary::add_nevent() %>% 
+    gtsummary::bold_p() %>% 
+    gtsummary::bold_labels() %>% 
+    gtsummary::italicize_levels() %>% 
+    gtsummary::sort_p() %>% 
+    bstfun::add_inline_forest_plot(header = '', spec_pointrange.args = list(lim = c(-3, 3), width = 550, cex = 1, col = 'black', pch = 1))
+
