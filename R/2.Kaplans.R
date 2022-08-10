@@ -71,6 +71,9 @@ data.Patient$CABARESC.OS <- data.Patient$CABARESC.clinical %>%
 
 data.Patient$CABAV7.OS %>% 
     dplyr::filter(!is.na(Survival)) %>% 
+    dplyr::mutate(
+        `Genome-wide status (Baseline)` = gsub('Genome-wide Z-', 'Aneuploidy ', `Genome-wide status (Baseline)`)
+    ) %>% 
     survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ `Genome-wide status (Baseline)` + `Dichotomized CTC count (Baseline)` + `WHO status (Pooled)`, data = ., ties = 'breslow') %>% 
     plotHR(., withQ = T)
 

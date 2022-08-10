@@ -80,6 +80,8 @@ plotHR <- function(data, withQ = F){
         x <- x %>% gtsummary::add_q()
     }
     
-    x %>% bstfun::as_ggplot()
+    #x <- x %>% bstfun::as_ggplot()
+    
+    return(x)
     
 }
