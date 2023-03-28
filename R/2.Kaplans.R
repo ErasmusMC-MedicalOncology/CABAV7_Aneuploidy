@@ -210,7 +210,7 @@ data.Patient$CABARESC.OS %>%
 
 # Determine optimal thresholds for stratifying Survival status ----
 
-data.Cuttoff <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx', sheet = 'Clinical (CABAV7)', trim_ws = T) %>% 
+data.Cutoff <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx', sheet = 'Clinical (CABAV7)', trim_ws = T) %>% 
   dplyr::inner_join(readxl::read_excel('Misc./Suppl. Table 1 - Overview of Data.xlsx', trim_ws = T, skip = 1, sheet = 'Overview (CABAV7)')) %>% 
   # Convert dates.
   dplyr::mutate_at(dplyr::vars(dplyr::contains('Date:')), as.Date) %>%
@@ -230,15 +230,15 @@ data.Cuttoff <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx'
   dplyr::filter(complete.cases(.))
 
 # Determine optimal cutt-off by max. optimizing sens./spec. to stratify survival status (1 / 0)
-cuttOffs <- list()
-cuttOffs$mFASTSeq <- cutpointr::cutpointr(data.Cuttoff, x = `Genome-Wide Z Score (Baseline)`, class = Survival, method = maximize_metric, metric = sum_sens_spec, pos_class	= 1, direction = '>=', boot_runs = 10000, boot_stratify = T)
-cuttOffs$CTC <- cutpointr::cutpointr(data.Cuttoff, x = `CTC Count (Baseline – 7.5mL)`, class = Survival, method = maximize_metric, metric = sum_sens_spec, pos_class	= 1, direction = '>=', boot_runs = 10000, boot_stratify = T)
+Cutoffs <- list()
+Cutoffs$mFASTSeq <- cutpointr::cutpointr(data.Cutoff, x = `Genome-Wide Z Score (Baseline)`, class = Survival, method = maximize_metric, metric = sum_sens_spec, pos_class	= 1, direction = '>=', boot_runs = 10000, boot_stratify = T)
+Cutoffs$CTC <- cutpointr::cutpointr(data.Cutoff, x = `CTC Count (Baseline – 7.5mL)`, class = Survival, method = maximize_metric, metric = sum_sens_spec, pos_class	= 1, direction = '>=', boot_runs = 10000, boot_stratify = T)
 
 ## Optimal CTC / mFAST-Seq classes.
-survData <- data.Cuttoff %>% 
+survData <- data.Cutoff %>% 
   dplyr::mutate(
-    Z = ifelse(`Genome-Wide Z Score (Baseline)` >= cuttOffs$mFASTSeq$optimal_cutpoint, sprintf('Aneuploidy ≥%s', cuttOffs$mFASTSeq$optimal_cutpoint), sprintf('Aneuploidy <%s', cuttOffs$mFASTSeq$optimal_cutpoint)),
-    CTC = ifelse(`CTC Count (Baseline – 7.5mL)` >= cuttOffs$CTC$optimal_cutpoint, sprintf('CTC Count ≥%s', cuttOffs$CTC$optimal_cutpoint), sprintf('CTC Count <%s', cuttOffs$CTC$optimal_cutpoint))
+    Z = ifelse(`Genome-Wide Z Score (Baseline)` >= Cutoffs$mFASTSeq$optimal_cutpoint, sprintf('Aneuploidy score ≥%s', Cutoffs$mFASTSeq$optimal_cutpoint), sprintf('Aneuploidy score <%s', Cutoffs$mFASTSeq$optimal_cutpoint)),
+    CTC = ifelse(`CTC Count (Baseline – 7.5mL)` >= Cutoffs$CTC$optimal_cutpoint, sprintf('CTC Count ≥%s', Cutoffs$CTC$optimal_cutpoint), sprintf('CTC Count <%s', Cutoffs$CTC$optimal_cutpoint))
   )
 
 fit <- survminer::surv_fit(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Z, data = survData)
@@ -250,11 +250,8 @@ fit <- survminer::surv_fit(formula = survival::Surv(monthsFromPreScreeningToEnd,
 names(fit$strata) <-  base::gsub('.*=', '', names(fit$strata))
 plotFits$fit.CABAV7.CTC.Optimized <- plotSurvival(fit, hr = survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ CTC, data = survData), data = survData, ylim = 45, palette = c('#f23005', '#ffbe73'))
 
-
+## Plot kaplap of new mFAST-SeqS cutoff
 plotFits$fit.CABAV7.mFASTSeqs.Optimized$plot +
-  plotFits$fit.CABAV7.CTC.Optimized$plot +
   plotFits$fit.CABAV7.mFASTSeqs.Optimized$table +
-  plotFits$fit.CABAV7.CTC.Optimized$table +
-  patchwork::plot_layout(ncol = 2, heights = c(1, .2), guides = 'auto') +
+  patchwork::plot_layout(ncol = 1, heights = c(1, .2), guides = 'auto') +
   patchwork::plot_annotation(tag_levels = 'a') & ggplot2::theme(plot.tag = element_text(size = 11, family = 'Roboto'))
-

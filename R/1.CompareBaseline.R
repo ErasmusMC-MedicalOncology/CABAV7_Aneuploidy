@@ -156,7 +156,8 @@ plot.CTC <- ggplot2::ggplot(dataCTC, ggplot2::aes(x = `CTC Count (Baseline – 7
 # Test mFAST-Seq classes vs. PSA response (n = 3) ----
 
 dataPSA <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx', sheet = 'Overview (CABAV7)', trim_ws = T, skip = 1) %>% 
-  dplyr::inner_join(data.CABAV7, by = 'Subject Number')
+  dplyr::inner_join(data.CABAV7, by = 'Subject Number') %>% 
+  dplyr::filter(`Inclusion (Treated with Caba)` == 'Yes')
 
 fisher.test(dataPSA$`Genome-wide status (Baseline)`, dataPSA$`Response PSA`)
 chisq.test(dataPSA$`Genome-wide status (Baseline)`, dataPSA$`Response PSA`)
@@ -175,3 +176,20 @@ chisq.test(dataAR$`Genome-wide status (Baseline)`, dataAR$`Response PSA`)
 # Combine plots. ----
 
 plot.VAF + plot.CTC
+
+
+# Overview of distribution of aneuploidy scores. ----
+
+dataZScores <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx', sheet = 'Overview (CABAV7)', trim_ws = T, skip = 1) %>% 
+  dplyr::mutate(
+    group = gsub('Genome-wide Z-score', 'Aneuploidy score', `Genome-wide status (Baseline)`),
+    `Genome-Wide Z Score (Baseline)` = ifelse(`Genome-Wide Z Score (Baseline)` < 0, 0, `Genome-Wide Z Score (Baseline)`)
+    )
+
+ggplot2::ggplot(dataZScores, ggplot2::aes(x = group, y = `Genome-Wide Z Score (Baseline)`, fill = group)) + 
+  gghalves::geom_half_point_panel(shape = 21, position = ggbeeswarm::position_beeswarm(cex = 1.5)) +
+  gghalves::geom_half_boxplot(outlier.shape = NA, notch = F) +
+  ggplot2::labs(x = NULL, y = 'Aneuploidy scores (Baseline)') +
+  ggplot2::scale_fill_manual(values = c('#648FFF', '#FE6100'), guide = 'none') + 
+  ggplot2::scale_y_continuous(trans = scales::pseudo_log_trans(), breaks = c(0:5, 10, 25, 50, 100, 250, 500, 1000), limits = c(0,1000), expand = c(0,0.05)) +
+  theme_Job
