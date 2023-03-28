@@ -7,6 +7,7 @@
 library(plyr)
 library(dplyr)
 library(patchwork)
+library(ggpmisc)
 
 # Helper themes and functions.
 source('R/misc_Themes.R')
@@ -117,42 +118,6 @@ MASS::stepAIC(survival::coxph(formula = survival::Surv(monthsFromPreScreeningToE
 # `Dichotomized CTC count (Baseline)`CTC Count ≥5  1.082219  2.951223  0.342824  3.157 0.00160
 
 
-# Comparison of mFAST-Seq scores vs. max. VAF ----
-
-dataVAF <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx', sheet = 'Overview (CABAV7)', trim_ws = T, skip = 1) %>% 
-  dplyr::distinct(`Max. VAF`, `Genome-Wide Z Score (Baseline)`) %>% 
-  dplyr::mutate(
-    `Genome-Wide Z Score (Baseline)` = ifelse(`Genome-Wide Z Score (Baseline)` < 0, 0 , `Genome-Wide Z Score (Baseline)`)
-  ) %>% 
-  dplyr::filter(complete.cases(.)) 
-
-plot.VAF <- ggplot2::ggplot(dataVAF, ggplot2::aes(x = `Max. VAF`, y = `Genome-Wide Z Score (Baseline)`)) +
-  ggplot2::scale_x_continuous(trans = scales::pseudo_log_trans(), limits = c(0,1), labels = c(0, .25, .5, .75, 1), expand = c(0,0.01)) +
-  ggplot2::scale_y_continuous(trans = scales::pseudo_log_trans(), breaks = c(0:5, 10, 100, 200, 400, 800), expand = c(0,0.1)) +
-  ggpubr::stat_cor(method='spearman', alternative = 'two.sided', cor.coef.name = 'rho') +
-  ggplot2::geom_hline(yintercept = 5, color = 'red', lty = 11, lwd = .33) +
-  ggplot2::geom_point(size = 2) +
-  ggpmisc::stat_poly_line(method = 'lm', se = T, color = 'darkblue', lty= 1, lwd = .8) +
-  ggpmisc::stat_poly_eq(label.y = 0.9, label.x = 0.02, ggplot2::aes(label = ggplot2::after_stat(eq.label)), method = 'lm') +
-  theme_Job
-
-# Comparison of mFAST-Seq scores vs. CTC counts ----
-
-dataCTC <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx', sheet = 'Overview (CABAV7)', trim_ws = T, skip = 1) %>% 
-  dplyr::select(`CTC Count (Baseline – 7.5mL)`, `Genome-Wide Z Score (Baseline)`) %>% 
-  dplyr::filter(complete.cases(.)) 
-
-plot.CTC <- ggplot2::ggplot(dataCTC, ggplot2::aes(x = `CTC Count (Baseline – 7.5mL)`, y = `Genome-Wide Z Score (Baseline)`)) +
-  ggplot2::scale_x_continuous(trans = scales::pseudo_log_trans(), breaks = c(0, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000), expand = c(0,0.1)) +
-  ggplot2::scale_y_continuous(trans = scales::pseudo_log_trans(), breaks = c(0:5, 10, 100, 200, 400, 800), expand = c(0,0.1)) +
-  ggpubr::stat_cor(method='spearman', alternative = 'two.sided', cor.coef.name = 'rho') +
-  ggplot2::geom_hline(yintercept = 5, color = 'red', lty = 11, lwd = .33) +
-  ggplot2::geom_point(size = 2) +
-  ggpmisc::stat_poly_line(method = 'lm', se = T, color = 'darkblue', lty= 1, lwd = .8) +
-  ggpmisc::stat_poly_eq(label.y = 0.9, label.x = 0.02, ggplot2::aes(label = ggplot2::after_stat(eq.label)), method = 'lm') +
-  theme_Job
-
-
 # Test mFAST-Seq classes vs. PSA response (n = 3) ----
 
 dataPSA <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx', sheet = 'Overview (CABAV7)', trim_ws = T, skip = 1) %>% 
@@ -173,9 +138,42 @@ fisher.test(dataAR$`Genome-wide status (Baseline)`, dataAR$`AR-V7 (Baseline)`)
 chisq.test(dataAR$`Genome-wide status (Baseline)`, dataAR$`Response PSA`)
 
 
-# Combine plots. ----
+# Comparison of mFAST-Seq scores vs. max. VAF ----
 
-plot.VAF + plot.CTC
+dataVAF <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx', sheet = 'Overview (CABAV7)', trim_ws = T, skip = 1) %>% 
+  dplyr::distinct(`Max. VAF`, `Genome-Wide Z Score (Baseline)`) %>% 
+  dplyr::mutate(
+    `Genome-Wide Z Score (Baseline)` = ifelse(`Genome-Wide Z Score (Baseline)` < 0, 0 , `Genome-Wide Z Score (Baseline)`)
+  ) %>% 
+  dplyr::filter(complete.cases(.)) 
+
+plot.VAF <- ggplot2::ggplot(dataVAF, ggplot2::aes(x = `Max. VAF`, y = `Genome-Wide Z Score (Baseline)`)) +
+  ggplot2::scale_x_continuous(trans = scales::pseudo_log_trans(), limits = c(0,1), labels = c(0, .25, .5, .75, 1), expand = c(0,0.01)) +
+  ggplot2::scale_y_continuous(trans = scales::pseudo_log_trans(), breaks = c(0:5, 10, 25, 50, 100, 200, 400, 800), expand = c(0,0.1)) +
+  ggpubr::stat_cor(method='spearman', alternative = 'two.sided', cor.coef.name = 'rho') +
+  ggplot2::geom_hline(yintercept = 5, color = 'red', lty = 11, lwd = .33) +
+  ggplot2::geom_point(size = 2) +
+  ggplot2::labs(y = 'Aneuploidy scores') +
+  ggpmisc::stat_poly_line(method = 'lm', se = T, color = 'darkblue', lty= 1, lwd = .8) +
+  ggpmisc::stat_poly_eq(label.y = 0.9, label.x = 0.02, ggplot2::aes(label = ggplot2::after_stat(eq.label)), method = 'lm') +
+  theme_Job
+
+# Comparison of mFAST-Seq scores vs. CTC counts ----
+
+dataCTC <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx', sheet = 'Overview (CABAV7)', trim_ws = T, skip = 1) %>% 
+  dplyr::select(`CTC Count (Baseline – 7.5mL)`, `Genome-Wide Z Score (Baseline)`) %>% 
+  dplyr::filter(complete.cases(.)) 
+
+plot.CTC <- ggplot2::ggplot(dataCTC, ggplot2::aes(x = `CTC Count (Baseline – 7.5mL)`, y = `Genome-Wide Z Score (Baseline)`)) +
+  ggplot2::scale_x_continuous(trans = scales::pseudo_log_trans(), breaks = c(0, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000), expand = c(0,0.1)) +
+  ggplot2::scale_y_continuous(trans = scales::pseudo_log_trans(), breaks = c(0:5, 10, 25, 50, 100, 200, 400, 800), expand = c(0,0.1)) +
+  ggpubr::stat_cor(method='spearman', alternative = 'two.sided', cor.coef.name = 'rho') +
+  ggplot2::geom_hline(yintercept = 5, color = 'red', lty = 11, lwd = .33) +
+  ggplot2::geom_point(size = 2) +
+  ggplot2::labs(y = 'Aneuploidy scores') +
+  ggpmisc::stat_poly_line(method = 'lm', se = T, color = 'darkblue', lty= 1, lwd = .8) +
+  ggpmisc::stat_poly_eq(label.y = 0.9, label.x = 0.02, ggplot2::aes(label = ggplot2::after_stat(eq.label)), method = 'lm') +
+  theme_Job
 
 
 # Overview of distribution of aneuploidy scores. ----
@@ -184,12 +182,19 @@ dataZScores <- readxl::read_xlsx('Misc./Suppl. Table 1 - Overview of Data.xlsx',
   dplyr::mutate(
     group = gsub('Genome-wide Z-score', 'Aneuploidy score', `Genome-wide status (Baseline)`),
     `Genome-Wide Z Score (Baseline)` = ifelse(`Genome-Wide Z Score (Baseline)` < 0, 0, `Genome-Wide Z Score (Baseline)`)
-    )
+  )
 
-ggplot2::ggplot(dataZScores, ggplot2::aes(x = group, y = `Genome-Wide Z Score (Baseline)`, fill = group)) + 
-  gghalves::geom_half_point_panel(shape = 21, position = ggbeeswarm::position_beeswarm(cex = 1.5)) +
+plot.Zscores <- ggplot2::ggplot(dataZScores, ggplot2::aes(x = group, y = `Genome-Wide Z Score (Baseline)`, fill = group)) + 
+  gghalves::geom_half_point_panel(shape = 21, size = 2, position = ggbeeswarm::position_beeswarm(cex = 1.5)) +
   gghalves::geom_half_boxplot(outlier.shape = NA, notch = F) +
-  ggplot2::labs(x = NULL, y = 'Aneuploidy scores (Baseline)') +
+  ggplot2::labs(x = NULL, y = 'Aneuploidy scores') +
+  ggplot2::scale_y_continuous(trans = scales::pseudo_log_trans(), breaks = c(0:5, 10, 25, 50, 100, 200, 400, 800), expand = c(0,0.1)) +
   ggplot2::scale_fill_manual(values = c('#648FFF', '#FE6100'), guide = 'none') + 
-  ggplot2::scale_y_continuous(trans = scales::pseudo_log_trans(), breaks = c(0:5, 10, 25, 50, 100, 250, 500, 1000), limits = c(0,1000), expand = c(0,0.05)) +
   theme_Job
+
+
+# Combine plots. ----
+
+plot.Zscores + plot.VAF + plot.CTC +
+  patchwork::plot_layout(ncol = 3, widths = c(1, 3, 3), guides = 'auto') +
+  patchwork::plot_annotation(tag_levels = 'a') & ggplot2::theme(plot.tag = element_text(size = 11, family = 'Roboto'))
