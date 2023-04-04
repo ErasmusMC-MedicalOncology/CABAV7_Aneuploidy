@@ -69,8 +69,7 @@ fit <- survminer::surv_fit(formula = survival::Surv(monthsFromPreScreeningToEnd,
 names(fit$strata) <-  base::gsub('.*=', '', names(fit$strata))
 plotFits$fit.CABARESC.mFASTSeqs.Optimized <- plotSurvival(fit, hr = survival::coxph(formula = survival::Surv(monthsFromPreScreeningToEnd, Survival) ~ Z, data = survData), data = survData, ylim = 45, palette = c('#648FFF', '#FE6100'))
 
-
-## Plot kaplap of new mFAST-SeqS cutoff
+## Plot kaplan of new mFAST-SeqS cutoff ----
 plotFits$fit.CABAV7.mFASTSeqs.Optimized$plot +
   plotFits$fit.CABARESC.mFASTSeqs.Optimized$plot +
   plotFits$fit.CABAV7.mFASTSeqs.Optimized$table +
